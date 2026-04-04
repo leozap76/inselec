@@ -1,12 +1,13 @@
 let cart = JSON.parse(localStorage.getItem('pedido')) || [];
 
-function addToCart(id, opcionIndex = null) {
-    const prod = productos.find(p => p.id === id);
+function agregarAlCarrito(id, opcionIndex = null) {
+    const prod = window.productos.find(p => p.id === id);
     if (!prod) return;
 
     let cartItemId = id;
     let cartItemName = prod.nombre;
     let cartItemPrice = prod.precio;
+    let cartItemImg = prod.imagen || prod.img || 'https://i.ibb.co/v6SXYpXC/favicon-menuya.webp';
 
     if (opcionIndex !== null && prod.opciones && prod.opciones[opcionIndex]) {
         const op = prod.opciones[opcionIndex];
@@ -20,10 +21,18 @@ function addToCart(id, opcionIndex = null) {
     if (exists) {
         exists.cantidad++;
     } else {
-        cart.push({ ...prod, cartItemId: cartItemId, nombre: cartItemName, precio: cartItemPrice, cantidad: 1 });
+        cart.push({ 
+            ...prod, 
+            cartItemId: cartItemId, 
+            nombre: cartItemName, 
+            precio: cartItemPrice, 
+            imagen: cartItemImg,
+            cantidad: 1 
+        });
     }
     saveAndRefresh();
 }
+window.addToCart = agregarAlCarrito; // Alias para mantener compatibilidad si fuera necesario
 
 function changeQuantity(cartItemId, delta) {
     const buscaId = String(cartItemId);
@@ -43,7 +52,7 @@ function changeQuantity(cartItemId, delta) {
 
 function saveAndRefresh() {
     localStorage.setItem('pedido', JSON.stringify(cart));
-    if (typeof updateUI === "function") updateUI(); 
+    if (typeof actualizarInterfazCarrito === "function") actualizarInterfazCarrito(); 
 }
 
 function iniciarCheckout() {
