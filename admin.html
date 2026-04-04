@@ -686,7 +686,8 @@ function agregarProducto() {
                 listaProductos[index].nombre = name;
                 listaProductos[index].precio = price;
                 listaProductos[index].categoria = cat;
-                listaProductos[index].img = img || "img/default.webp";
+                listaProductos[index].imagen = img || "img/default.webp";
+                if (listaProductos[index].img) delete listaProductos[index].img;
                 listaProductos[index].desc = desc;
                 listaProductos[index].opciones = opcionesArray.length > 0 ? opcionesArray : null;
             }
@@ -711,7 +712,7 @@ function agregarProducto() {
                 precio: price,
                 categoria: cat,
                 desc: desc,
-                img: img || "img/default.webp",
+                imagen: img || "img/default.webp",
                 opciones: opcionesArray.length > 0 ? opcionesArray : null
             };
 
@@ -955,7 +956,7 @@ function editarProducto(id) {
     document.getElementById('prodName').value = p.nombre;
     document.getElementById('prodPrice').value = p.precio;
     document.getElementById('prodCat').value = p.categoria ? p.categoria.toLowerCase() : "";
-    document.getElementById('prodImg').value = p.img;
+    document.getElementById('prodImg').value = p.imagen || p.img || "";
     document.getElementById('prodDesc').value = p.desc || "";
     
     // Convertir opciones de array a texto para el input
