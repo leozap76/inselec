@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    
+     <link rel="apple-touch-icon" href="https://i.ibb.co/v6SXYpXC/favicon-menuya.webp">
+<link rel="icon" type="image/png" href="https://i.ibb.co/v6SXYpXC/favicon-menuya.webp">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #080808; color: #ffffff; }
+        .font-brand { font-family: 'Bangers', system-ui; }
+        input, textarea, select { background-color: #1a1a1a !important; border: 1px solid rgba(255,255,255,0.05) !important; color: white !important; }
+        input:focus { border-color: #ff6b00 !important; outline: none; }
+        .crazy-gradient { background: linear-gradient(135deg, #ff6b00 0%, #ff8e3c 100%); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #080808; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; border: 1px solid #ff6b0033; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Login -->
+    <div id="admin-login" class="max-w-md mx-auto bg-[#1a1a1a] p-10 rounded-[2.5rem] shadow-2xl mt-20 text-center border border-white/5">
+    <div class="mb-6 bg-gradient-to-tr from-orange-600 to-orange-400 w-20 h-20 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20">
+        <i data-lucide="lock" class="text-white w-10 h-10"></i>
+    </div>
+
+    <h1 class="text-3xl font-brand text-[#ff6b00] mb-2 uppercase tracking-wider">Panel de Control</h1>
+    <p class="text-gray-400 text-sm mb-8">Gestión de menú, envíos y marca</p>
+    
+    <input type="password" id="admin-pass" placeholder="••••" class="w-full p-4 bg-[#252525] border border-white/5 rounded-2xl text-center text-2xl text-white tracking-widest mb-6 focus:outline-none focus:border-orange-500/50 transition-all">
+    
+    <button onclick="checkPass()" class="w-full bg-gradient-to-r from-orange-600 to-orange-400 text-black py-4 rounded-2xl font-black hover:scale-[1.02] active:scale-[0.98] transition-all uppercase">
+        ACCEDER AL PANEL
+    </button>
+    
+    <p id="login-error" class="text-red-500 text-xs mt-4 hidden font-bold">ACCESO DENEGADO</p>
+</div>
+
+    <!-- Main Dashboard -->
+    <div id="admin-content" class="hidden max-w-7xl mx-auto pb-20">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-4xl font-brand text-[#ff6b00] tracking-wider" id="display-store-name">CARGANDO...</h1>
+                <p class="text-gray-500 text-sm uppercase tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Panel de Control Total
+                </p>
+                <div class="w-24 h-24 rounded-2xl bg-white p-1 shadow-xl border border-slate-100 overflow-hidden mt-4">
+                    <img id="store-logo-admin" src="https://i.ibb.co/v6SXYpXC/favicon-menuya.webp" class="w-full h-full object-cover" alt="Logo Tienda">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+    <div>
+        <label class="text-[10px] text-gray-500 uppercase">Link del Logo (.png/.jpg)</label>
+        <input type="text" id="conf-logo" class="w-full p-3 bg-[#080808] border border-white/5 rounded-xl text-white text-sm">
+    </div>
+    <div>
+        <label class="text-[10px] text-gray-500 uppercase">Link del Fondo (.jpg)</label>
+        <input type="text" id="conf-fondo" class="w-full p-3 bg-[#080808] border border-white/5 rounded-xl text-white text-sm">
+    </div>
+</div>
+            </div>
+            
+      
+           
+      
+            <div class="flex gap-3">
+                <button onclick="generarQR()" class="bg-orange-500/10 border border-orange-500 text-orange-500 px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-orange-500 hover:text-white transition-all">
+                    <i data-lucide="qr-code" class="w-5 h-5"></i> CÓDIGO QR
+                </button>
+                
+                <button onclick="location.reload()" class="bg-white/5 p-3 rounded-2xl hover:bg-red-500/20 text-gray-500 hover:text-red-500 transition-all border border-white/5">
+                    <i data-lucide="log-out"></i>
+                </button>
+
+                
+           
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8" id="admin-dashboard-content">
+            
+            <!-- Columna Izquierda: Configuraciones y Formularios -->
+            <div class="lg:col-span-4 space-y-8">
+                
+                <!-- 1. Configuración de Tienda -->
+                <section class="bg-[#1a1a1a] p-8 rounded-[2.5rem] border border-white/5">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+                        <i data-lucide="settings" class="text-[#ff6b00]"></i> Configuración General
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[10px] text-gray-500 font-bold uppercase ml-1">Nombre del Local</label>
+                            <input type="text" id="conf-nombre" class="w-full p-4 rounded-2xl mt-1" >
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-500 font-bold uppercase ml-1">WhatsApp (con código de país)</label>
+                            <input type="text" id="conf-whatsapp" placeholder="Ej: 54911..." class="w-full p-4 rounded-2xl mt-1">
+                        </div>
+                    </div>
+       <div class="mt-6 pt-4 border-t border-white/5">
+    <h3 class="text-[10px] font-bold text-[#ff6b00] uppercase tracking-widest mb-4">Horarios de Atención</h3>
+    
+    <div class="space-y-4">
+        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
+            <label class="text-[9px] text-gray-500 font-bold uppercase block mb-2">Turno Mañana</label>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="time" id="apertura1" class="w-full text-xs p-2 rounded-lg bg-[#0f0f0f]">
+                <input type="time" id="cierre1" class="w-full text-xs p-2 rounded-lg bg-[#0f0f0f]">
+            </div>
+        </div>
+        
+        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
+            <label class="text-[9px] text-gray-500 font-bold uppercase block mb-2">Turno Noche</label>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="time" id="apertura2" class="w-full text-xs p-2 rounded-lg bg-[#0f0f0f]">
+                <input type="time" id="cierre2" class="w-full text-xs p-2 rounded-lg bg-[#0f0f0f]">
+            </div>
+        </div>
+    </div>
+
+    <button onclick="saveConfig()" class="w-full mt-4 bg-[#ff6b00] text-black text-[10px] font-black py-3 rounded-xl hover:scale-[1.02] transition-all uppercase">
+        Actualizar Datos de Tienda
+    </button>
+</div>
+                </section>
+
+                <!-- 2. Form Producto -->
+                <section class="bg-[#1a1a1a] p-8 rounded-[2.5rem] border border-white/5">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+                        <i data-lucide="" class="text-[#ff6b00]"></i> Nuevo Producto
+                    </h2>
+                    <form id="product-form" class="space-y-4">
+                       
+                       
+                        
+                        <!-- Selector de Imagen -->
+                        <div class="space-y-4">
+    <input type="text" id="prodName" placeholder="Nombre del Producto" class="w-full bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 text-sm focus:border-[#ff6b00] outline-none text-white">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="w-full">
+            <label class="text-[10px] text-gray-500 font-bold uppercase ml-1 tracking-widest">Precio Base ($)</label>
+            <input type="number" id="prodPrice" placeholder="0" class="w-full bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 lg:py-4 text-sm lg:text-base focus:border-[#ff6b00] outline-none text-white mt-1 shadow-inner">
+        </div>
+        <div class="w-full">
+            <label class="text-[10px] text-gray-500 font-bold uppercase ml-1 tracking-widest">Categoría Existente</label>
+            <select id="prodCat" class="w-full bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 lg:py-4 text-sm lg:text-base focus:border-[#ff6b00] outline-none text-white mt-1 appearance-none cursor-pointer">
+                <option value="" disabled selected>Cargando...</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Zona de Añadir Categoría Optimizada -->
+    <div class="bg-black/40 p-4 lg:p-6 rounded-[1.5rem] border border-white/5 mt-2 shadow-inner">
+        <label class="text-[10px] text-[#22c55e] font-bold uppercase ml-1 tracking-widest mb-2 block">¿No está la categoría? Créala aquí</label>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="nueva-cat" placeholder="Ej: Conductores o termicas" 
+                   class="flex-grow bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 lg:py-4 text-sm lg:text-base focus:border-[#22c55e] outline-none text-white transition-all">
+            <button type="button" onclick="agregarCategoria()" 
+                    class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 lg:py-4 rounded-xl text-xs lg:text-sm font-black transition-all shadow-lg shadow-green-900/40 active:scale-95 whitespace-nowrap uppercase tracking-widest">
+                AÑADIR
+            </button>
+        </div>
+    </div>
+
+    <div class="space-y-2">
+        <label class="text-[10px] text-gray-500 font-bold uppercase ml-1 tracking-widest block">URL de la Imagen</label>
+        <div class="flex gap-2">
+            <input type="text" id="prodImg" placeholder="URL de la imagen..." 
+                   class="flex-grow bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 text-sm focus:border-[#ff6b00] outline-none text-white">
+            <button type="button" onclick="verFoto()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-xl cursor-pointer transition-all flex items-center justify-center border border-white/5 group active:scale-95">
+                <i data-lucide="eye" class="w-5 h-5 group-hover:text-[#ff6b00]"></i>
+            </button>
+        </div>
+        <p class="text-[9px] text-gray-500 ml-1 italic">Subí tu foto a imgbb.com y pegá aquí el Enlace Directo.</p>
+    </div>
+
+    <div>
+    <label class="block text-[11px] font-bold text-[#ff6b00] uppercase tracking-widest mb-2 ml-1">Opciones / Variantes (Opcional)</label>
+    <input type="text" id="prodOpciones" placeholder="Ej: Colores de cables" class="w-full bg-[#1a1a1a] p-4 rounded-2xl border border-white/5 text-white focus:outline-none focus:border-[#ff6b00]">
+    <p class="text-xs text-gray-500 mt-1">Formato: Nombre:Precio separados por coma.</p>
+</div>
+    
+    <textarea id="prodDesc" placeholder="Descripción breve" class="w-full bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 text-sm focus:border-[#ff6b00] outline-none h-24 text-white"></textarea>
+    
+   <div class="flex gap-2">
+    <button type="button" id="btn-save-prod" onclick="agregarProducto()" class="w-full bg-[#ff6b00] text-black font-bold py-3 rounded-xl hover:opacity-90 transition-all uppercase tracking-wider">
+        Guardar 
+    </button>
+    <button id="btn-cancel-edit" onclick="cancelarEdicion()" class="hidden w-1/3 bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 transition-all uppercase tracking-wider">
+        X
+    </button>
+</div>
+<input type="hidden" id="edit-id">
+</div>
+                    </form>
+                </section>
+
+                <!-- 3. Form Zonas -->
+      <section class="bg-[#1a1a1a] p-8 rounded-[2.5rem] border border-white/5 shadow-xl">
+    <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+        <i data-lucide="truck" class="text-[#ff6b00]"></i> Zonas de Envío
+    </h2>
+    <form id="zone-form" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            
+            <div class="md:col-span-7">
+                <label class="text-[10px] text-gray-500 font-bold uppercase ml-1 tracking-widest">Nombre del Barrio / Zona</label>
+                <input type="text" id="z-nombre" placeholder="Ej: Zona Centro o Km 3" 
+                       class="w-full p-4 rounded-2xl mt-2 bg-black/20 border border-white/10 focus:border-[#ff6b00] outline-none transition-all" required>
+            </div>
+
+            <div class="md:col-span-5">
+                <label class="text-[10px] text-gray-500 font-bold uppercase ml-1 tracking-widest">Costo de Envío ($)</label>
+                <input type="number" id="z-costo" placeholder="0" 
+                       class="w-full p-4 rounded-2xl mt-2 bg-black/20 border border-white/10 focus:border-[#ff6b00] outline-none transition-all" required>
+            </div>
+            
+        </div>
+
+        <button type="submit" class="w-full bg-[#ff6b00] text-black py-5 rounded-2xl font-black border border-[#ff6b00] hover:bg-transparent hover:text-[#ff6b00] transition-all uppercase tracking-[0.2em] text-xs shadow-[0_0_20px_rgba(255,107,0,0.2)]">
+            + Añadir Nueva Zona de Entrega
+        </button>
+    </form>
+</section> 
+            </div>
+
+            <!-- Columna Derecha: Listados -->
+            <div class="lg:col-span-8 space-y-8">
+                
+                <!-- Lista Productos -->
+                <div class="bg-[#1a1a1a] p-8 rounded-[2.5rem] border border-white/5">
+                    <h2 class="text-xl font-bold mb-6 flex justify-between items-center">
+                        <span class="flex items-center gap-3"><i data-lucide="list" class="text-[#ff6b00]"></i> Listado de Menú</span>
+                        <span id="prod-count" class="text-xs bg-white/5 px-3 py-1 rounded-full text-gray-400">0 Items</span>
+                    </h2>
+                    <div id="lista-productos" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Items -->
+                    </div>
+                </div>
+
+                <!-- Lista Zonas -->
+                <div class="bg-[#1a1a1a] p-8 rounded-[2.5rem] border border-white/5">
+    <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+        <i data-lucide="map-pin" class="text-[#ff6b00]"></i> Cobertura y Costos
+    </h2>
+    <div id="lista-zonas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        </div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CLAVE_ADMIN = '1234';
+       
+
+        // 1. ACÁ VA EL BLOQUE QUE ME PASASTE
+ const firebaseConfig = {
+        apiKey: "AIzaSyALQvj5eTB6j-qheLn-1R4S_r3fUnRys7c",
+        authDomain: "delivery-san-carlos.firebaseapp.com",
+        databaseURL: "https://delivery-san-carlos-default-rtdb.firebaseio.com",
+        projectId: "delivery-san-carlos",
+        storageBucket: "delivery-san-carlos.firebasestorage.app",
+        messagingSenderId: "66338904091",
+        appId: "1:66338904091:web:f346aeb950955742b340be"
+    };
+
+    // 2. INICIALIZÁS EL MOTOR
+    firebase.initializeApp(firebaseConfig);
+    window.db = firebase.database();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const CLIENTE_ID = urlParams.get('id');
+    const PATH_PRODUCTOS = CLIENTE_ID ? `comercios/${CLIENTE_ID}/productos` : null;
+    const PATH_ZONAS = CLIENTE_ID ? `comercios/${CLIENTE_ID}/zonas` : null;
+    const PATH_CONFIG = CLIENTE_ID ? `comercios/${CLIENTE_ID}/configuracion` : null;
+     // 3. VARIABLES GLOBALES (Importante: inicializarlas aquí)
+    let listaProductos = [];
+    let listaZonas = [];
+    let editandoId = null; // Variable global para saber si estamos editando
+   
+
+        function checkPass() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === CLAVE_ADMIN) {
+                document.getElementById('admin-login').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                renderUI();
+            } else {
+                const err = document.getElementById('login-error');
+                err.classList.remove('hidden');
+                setTimeout(() => err.classList.add('hidden'), 2000);
+            }
+        }
+
+        // --- FUNCIÓN PARA VER LA FOTO ---
+        function verFoto() {
+            const imageUrl = document.getElementById('prodImg').value;
+            if (imageUrl) {
+                Swal.fire({
+                    title: 'Vista Previa de la Imagen',
+                    imageUrl: imageUrl,
+                    imageAlt: 'Imagen del producto',
+                    imageWidth: '80%', // Ajusta según necesites
+                    imageHeight: 'auto',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        image: 'rounded-xl'
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: '¡Ups!',
+                    text: 'No hay URL de imagen para mostrar. Pega un enlace en el campo de texto.',
+                    icon: 'info',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    confirmButtonColor: '#ff6b00'
+                });
+            }
+        }
+
+
+ function saveConfig() {
+    const nombreInput = document.getElementById('conf-nombre').value;
+    const whatsappInput = document.getElementById('conf-whatsapp').value;
+    const logoInput = document.getElementById('conf-logo').value;
+    const fondoInput = document.getElementById('conf-fondo').value;
+
+    const nuevaConfig = {
+        nombre: (nombreInput || "Mi Tienda").toUpperCase(),
+        telefono: whatsappInput || "",
+        logoUrl: logoInput || 'https://i.ibb.co/v6SXYpXC/favicon-menuya.webp',
+        fondoUrl: fondoInput || 'https://i.ibb.co/5XW5JZgr/fondo-menuya.webp',
+        horario: {
+            turno1: { 
+                apertura: document.getElementById('apertura1').value || "11:00", 
+                cierre: document.getElementById('cierre1').value || "15:00" 
+            },
+            turno2: { 
+                apertura: document.getElementById('apertura2').value || "20:00", 
+                cierre: document.getElementById('cierre2').value || "02:00" 
+            }
+        }
+    };
+
+    // Guardar en Firebase usando UPDATE para no borrar campos extra (blindaje)
+    window.db.ref(PATH_CONFIG).update(nuevaConfig)
+        .then(() => {
+            console.log("Configuración actualizada");
+            
+            // 1. Actualizamos el nombre en la interfaz del admin
+            if (document.getElementById('display-store-name')) {
+                document.getElementById('display-store-name').innerText = nuevaConfig.nombre;
+            }
+
+            // 2. DISPARAR CARTEL DE ÉXITO (SweetAlert2)
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '¡Datos actualizados!',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                background: '#1a1a1a',
+                color: '#fff',
+                iconColor: '#ff6b00'
+            });
+        })
+        .catch(err => {
+            console.error("Error al guardar:", err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al guardar',
+                text: 'Hubo un problema con la base de datos.',
+                background: '#1a1a1a',
+                color: '#fff'
+            });
+        });
+}
+
+function agregarCategoria() {
+    const input = document.getElementById('nueva-cat');
+    const nombre = input.value.trim();
+    
+    if (nombre) {
+        // Normalizamos el texto (Primera letra mayúscula para que el menú sea uniforme)
+        const catNormalizada = nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
+        
+        if (!categoriasActivas.includes(catNormalizada)) {
+            categoriasActivas.push(catNormalizada);
+            renderCategorias();
+            input.value = '';
+            
+            // Notificación Toast de éxito
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Categoría "${catNormalizada}" añadida`,
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                background: '#1a1a1a',
+                color: '#fff',
+                iconColor: '#22c55e'
+            });
+        } else {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: 'La categoría ya existe',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#1a1a1a',
+                color: '#fff'
+            });
+        }
+    }
+}
+
+        // --- GESTIÓN DE IMÁGENES ---
+        function handleImageSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                document.getElementById('p-filename').innerText = file.name;
+                // Generamos la ruta relativa que el cliente usará en su carpeta
+                document.getElementById('p-img').value = `img/productos/${file.name}`;
+            }
+        }
+
+        // --- PRODUCTOS ---
+        
+
+        // --- ZONAS ---
+        document.getElementById('zone-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const nuevaZona = {
+        id: Date.now(),
+        nombre: document.getElementById('z-nombre').value,
+        costo: parseInt(document.getElementById('z-costo').value)
+    };
+
+    // Agregamos a la lista local
+    listaZonas.push(nuevaZona);
+
+    // GUARDAMOS EN FIREBASE (Rama 'zonas')
+    db.ref(PATH_ZONAS).set(listaZonas)
+        .then(() => {
+            Swal.fire({
+                title: "Zona Agregada",
+                icon: "success",
+                timer: 1000,
+                showConfirmButton: false,
+                background: '#1a1a1a',
+                color: '#fff'
+            });
+            renderUI();
+            e.target.reset();
+        })
+        .catch(err => console.error("Error al guardar zona:", err));
+});
+
+        // --- CONEXIÓN CON LA NUBE (FIREBASE) ---
+        function saveData() {
+    // 1. Guardamos en Firebase
+    db.ref(PATH_PRODUCTOS).set(listaProductos)
+      .then(() => {
+          // 2. RECIÉN ACÁ, cuando la nube responde, mostramos el éxito
+          Swal.fire({
+              title: '¡Menú Actualizado!',
+              text: 'Los cambios ya se ven en el catálogo de los clientes.',
+              icon: 'success',
+              background: '#1a1a1a',
+              color: '#fff',
+              confirmButtonColor: '#ff6b00',
+              timer: 2000,
+              showConfirmButton: false
+          });
+          renderUI();
+      })
+      .catch(err => {
+          console.error("Error al sincronizar:", err);
+          Swal.fire('Error', 'No se pudo conectar con la nube', 'error');
+      });
+}
+
+  function loadData() {
+    if (!CLIENTE_ID) {
+        console.warn("CLIENTE_ID no encontrado en la URL. No se cargarán datos de Firebase en el admin.");
+        document.title = "Error - ID Faltante";
+        const displayNombre = document.getElementById('display-store-name');
+        if (displayNombre) displayNombre.innerText = "ID DE CLIENTE FALTANTE";
+        const adminContent = document.getElementById('admin-dashboard-content');
+        if (adminContent) {
+            adminContent.innerHTML = `<div class="p-8 text-center text-slate-500"><i data-lucide="info" class="w-12 h-12 mx-auto mb-3 opacity-20"></i><p>Por favor, especifica un ID de cliente en la URL (ej: ?id=tucliente).</p></div>`;
+            if (window.lucide) lucide.createIcons();
+        }
+        return;
+    }
+
+    // 1. Escuchar PRODUCTOS en tiempo real
+    if (PATH_PRODUCTOS) {
+        db.ref(PATH_PRODUCTOS).on('value', (snapshot) => {
+            const items = [];
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
+                // Asignamos la key de Firebase como ID del objeto local
+                data.id = childSnapshot.key;
+                items.push(data);
+            });
+            listaProductos = items; // This effectively clears and re-populates
+            
+            if (typeof actualizarCategoriasDinamicas === 'function') actualizarCategoriasDinamicas();
+            if (typeof actualizarPantallaSiEsVisible === 'function') actualizarPantallaSiEsVisible();
+        });
+    } else {
+        console.warn("PATH_PRODUCTOS no válido. No se cargarán los productos en el admin.");
+        listaProductos = []; // Ensure local list is empty
+        if (typeof actualizarPantallaSiEsVisible === 'function') actualizarPantallaSiEsVisible();
+    }
+
+    // 2. Escuchar ZONAS DE ENVÍO en tiempo real
+    if (PATH_ZONAS) {
+        db.ref(PATH_ZONAS).on('value', (snapshot) => {
+            const data = snapshot.val();
+            listaZonas = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+            
+            if (typeof actualizarPantallaSiEsVisible === 'function') actualizarPantallaSiEsVisible();
+        });
+    } else {
+        console.warn("PATH_ZONAS no válido. No se cargarán las zonas de envío en el admin.");
+        listaZonas = []; // Ensure local list is empty
+        if (typeof actualizarPantallaSiEsVisible === 'function') actualizarPantallaSiEsVisible();
+    }
+
+    // 3. Escuchar CONFIGURACIÓN (Nombre, Teléfono, Logo, Fondo y Horarios)
+    if (PATH_CONFIG) {
+        db.ref(PATH_CONFIG).on('value', (snapshot) => {
+        const c = snapshot.val();
+        if (c) {
+            // Rellenar Nombre y WhatsApp
+            if(document.getElementById('conf-nombre')) document.getElementById('conf-nombre').value = c.nombre || "";
+            if(document.getElementById('conf-whatsapp')) document.getElementById('conf-whatsapp').value = c.telefono || "";
+            
+            // Rellenar Inputs de Links de Imágenes y actualizar preview
+            if(document.getElementById('conf-logo')) document.getElementById('conf-logo').value = c.logoUrl || "";
+            if(document.getElementById('conf-fondo')) document.getElementById('conf-fondo').value = c.fondoUrl || "";
+
+            // Actualizar Título visual del Panel
+            const displayNombre = document.getElementById('display-store-name');
+            if (displayNombre) displayNombre.innerText = (c.nombre || "MI TIENDA").toUpperCase();
+            
+            // Actualizar PREVISUALIZACIÓN DEL LOGO
+            const logoPreview = document.getElementById('store-logo-admin');
+            if (logoPreview) logoPreview.src = c.logoUrl || "https://i.ibb.co/v6SXYpXC/favicon-menuya.webp";
+
+            // Rellenar Horarios si existen
+            if (c.horario) {
+                const h = c.horario;
+                if(document.getElementById('apertura1')) document.getElementById('apertura1').value = h.turno1?.apertura || "00:00";
+                if(document.getElementById('cierre1')) document.getElementById('cierre1').value = h.turno1?.cierre || "00:00";
+                if(document.getElementById('apertura2')) document.getElementById('apertura2').value = h.turno2?.apertura || "00:00";
+                if(document.getElementById('cierre2')) document.getElementById('cierre2').value = h.turno2?.cierre || "00:00";
+            }
+        } else {
+            // If no config found for the CLIENTE_ID, clear inputs and show default name
+            if(document.getElementById('conf-nombre')) document.getElementById('conf-nombre').value = "";
+            if(document.getElementById('conf-whatsapp')) document.getElementById('conf-whatsapp').value = "";
+            if(document.getElementById('conf-logo')) document.getElementById('conf-logo').value = "";
+            if(document.getElementById('conf-fondo')) document.getElementById('conf-fondo').value = "";
+            const displayNombre = document.getElementById('display-store-name');
+            if (displayNombre) displayNombre.innerText = "TIENDA NO CONFIGURADA";
+            const logoPreview = document.getElementById('store-logo-admin');
+            if (logoPreview) logoPreview.src = "https://i.ibb.co/v6SXYpXC/favicon-menuya.webp"; // Fallback logo
+        }
+    });
+    } else {
+        console.warn("PATH_CONFIG no válido. No se cargará la configuración en el admin.");
+    }
+}
+
+function actualizarCategoriasDinamicas() {
+    // 1. Extraemos las categorías de los productos reales que bajaron de Firebase
+    // Si no hay productos, productCats será un array vacío []
+    const productCats = listaProductos.map(p => p.categoria).filter(c => c && c.trim() !== "");
+
+    // 2. Función para normalizar (Primera letra Mayúscula, resto minúscula)
+    const capitalize = (s) => {
+        if (typeof s !== 'string') return "";
+        const texto = s.trim();
+        return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+    };
+
+    // 3. Quitamos duplicados y normalizamos
+    // Ya no usamos "baseCats", así el menú queda limpio para cada cliente
+    categoriasActivas = [...new Set(productCats.map(capitalize))];
+
+    // 4. Si después de filtrar no hay categorías (cliente nuevo), 
+    // podemos poner una por defecto o dejarlo vacío
+    if (categoriasActivas.length === 0) {
+        categoriasActivas = ["General"];
+    }
+    
+    // 5. Dibujamos en el select del Admin
+    renderCategorias();
+}
+
+// Función auxiliar para no repetir código
+function actualizarPantallaSiEsVisible() {
+    const content = document.getElementById('admin-content');
+    if (content && !content.classList.contains('hidden')) {
+        renderUI();
+    }
+}
+
+        // Ejecutamos la carga inicial
+        loadData();
+        // ---------------------------------------
+
+function agregarProducto() {
+    const nameInput = document.getElementById('prodName');
+    const priceInput = document.getElementById('prodPrice');
+    const catInput = document.getElementById('prodCat');
+    const imgInput = document.getElementById('prodImg');
+    const descInput = document.getElementById('prodDesc');
+    const opcionesInput = document.getElementById('prodOpciones');
+
+    const name = nameInput.value;
+    const price = parseInt(priceInput.value);
+    const cat = catInput.value;
+    const img = imgInput.value;
+    const desc = descInput.value;
+    const opcionesStr = opcionesInput.value ? opcionesInput.value.trim() : "";
+
+    // 1. Validación con alerta de Error
+    if (!name || isNaN(price) || !cat) {
+        Swal.fire({
+            title: '¡Ups!',
+            text: 'Completa Nombre, Precio y Categoría para continuar.',
+            icon: 'warning',
+            background: '#1a1a1a',
+            color: '#fff',
+            confirmButtonColor: '#ff6b00',
+            confirmButtonText: 'Entendido'
+        });
+        return;
+    }
+
+    try {
+        // Lógica para separar y guardar las opciones
+        let opcionesArray = [];
+        if (opcionesStr) {
+            opcionesArray = opcionesStr.split(',').map(op => {
+                const partes = op.split(':');
+                if (partes.length === 2) {
+                    return { nombre: partes[0].trim(), precio: parseInt(partes[1].trim()) };
+                }
+                return null;
+            }).filter(op => op !== null && !isNaN(op.precio));
+        }
+
+        // Verificamos si estamos EDITANDO o CREANDO uno nuevo
+        if (typeof editandoId !== 'undefined' && editandoId !== null) {
+            // ---- MODO EDICIÓN ----
+            const index = listaProductos.findIndex(p => String(p.id) === String(editandoId));
+            if (index !== -1) {
+                listaProductos[index].nombre = name;
+                listaProductos[index].precio = price;
+                listaProductos[index].categoria = cat;
+                listaProductos[index].img = img || "img/default.webp";
+                listaProductos[index].desc = desc;
+                listaProductos[index].opciones = opcionesArray.length > 0 ? opcionesArray : null;
+            }
+
+            // Alerta de Edición exitosa
+            Swal.fire({
+                title: '¡Actualizado!',
+                text: `"${name}" se modificó correctamente.`,
+                icon: 'success',
+                iconColor: '#2563eb',
+                background: '#1a1a1a',
+                color: '#fff',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+        } else {
+            // ---- MODO CREACIÓN (NUEVO) ----
+            const nuevo = {
+                id: Date.now(),
+                nombre: name,
+                precio: price,
+                categoria: cat,
+                desc: desc,
+                img: img || "img/default.webp",
+                opciones: opcionesArray.length > 0 ? opcionesArray : null
+            };
+
+            listaProductos.push(nuevo);
+
+            // Alerta de Creación exitosa
+            Swal.fire({
+                title: '¡Plato Guardado!',
+                text: `"${name}" se agregó correctamente al menú.`,
+                icon: 'success',
+                iconColor: '#ff6b00',
+                background: '#1a1a1a',
+                color: '#fff',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        // Guardamos los datos y refrescamos la pantalla
+        saveData();
+
+        // Limpiar y resetear estado
+        cancelarEdicion();
+
+    } catch (error) {
+        // 3. Alerta de Fallo Técnico
+        Swal.fire({
+            title: 'Error de guardado',
+            text: 'Hubo un problema al procesar los datos.',
+            icon: 'error',
+            background: '#1a1a1a',
+            color: '#fff',
+            confirmButtonColor: '#ff0000'
+        });
+        console.error(error);
+    }
+}
+
+       function renderUI() {
+    // --- 1. RENDER DE PRODUCTOS ---
+    const pCont = document.getElementById('lista-productos');
+    if (pCont) {
+        document.getElementById('prod-count').innerText = `${listaProductos.length} Items`;
+        
+        pCont.innerHTML = listaProductos.map(producto => `
+            <div onclick="editarProducto('${producto.id}')" 
+                 class="flex items-center justify-between bg-black/40 p-4 rounded-3xl border border-white/5 group hover:border-[#ff6b00]/50 hover:bg-black/60 transition-all cursor-pointer">
+                
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+                        <img src="${producto.imagen || producto.img || 'https://i.ibb.co/v6SXYpXC/favicon-menuya.webp'}" class="w-full h-full object-cover" onerror="this.src='https://i.ibb.co/v6SXYpXC/favicon-menuya.webp'">
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-white text-sm truncate">${producto.nombre}</p>
+                        <p class="text-[10px] text-[#ff6b00] font-black tracking-widest uppercase mt-0.5">
+                            $ ${producto.precio.toLocaleString()}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-gray-600 opacity-0 group-hover:opacity-100 transition-all uppercase font-bold">Editar</span>
+                    <button onclick="event.stopPropagation(); borrarProducto('${producto.id}')" 
+                            class="text-gray-700 hover:text-red-500 p-3 rounded-full hover:bg-red-500/10 transition-all flex-shrink-0">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // --- 2. RENDER DE ZONAS DE ENVÍO ---
+    const zCont = document.getElementById('lista-zonas');
+    if (zCont) {
+        zCont.innerHTML = listaZonas.map(z => `
+            <div class="bg-black/40 p-4 rounded-3xl border border-white/5 flex justify-between items-center group hover:border-[#ff6b00]/30 transition-all">
+                <div>
+                    <p class="text-sm font-bold text-white">${z.nombre}</p>
+                    <p class="text-[10px] text-[#ff6b00] font-black tracking-widest uppercase mt-0.5">
+                        $ ${z.costo.toLocaleString()}
+                    </p>
+                </div>
+                <button onclick="borrarZona(${z.id})" 
+                        class="text-gray-700 hover:text-red-500 p-2 rounded-full hover:bg-red-500/10 transition-all">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // Actualizar iconos de Lucide en toda la pantalla
+    lucide.createIcons();
+}
+
+let categoriasActivas = ['Pizzas', 'Empanadas', 'Bebidas']; // Categorías por defecto
+
+function renderCategorias() {
+    const select = document.getElementById('prodCat');
+    
+    // VALIDACIÓN: Si el select no existe en pantalla, salimos de la función sin hacer nada
+    if (!select) return; 
+
+    // Si existe, procedemos a llenar las categorías
+    const opcionesBase = '<option value="" disabled selected>Selecciona una categoría</option>';
+    
+    // Usamos categoriasActivas (asegurate de que este array esté definido)
+    const opcionesDinamicas = categoriasActivas.map(cat => 
+        `<option value="${cat.toLowerCase()}">${cat}</option>`
+    ).join('');
+
+    select.innerHTML = opcionesBase + opcionesDinamicas;
+}
+
+// Llamá a esta función al cargar la página
+renderCategorias();
+
+        function borrarProducto(id) {
+            if(confirm("¿Seguro que quieres quitar este plato del menú?")) {
+                listaProductos = listaProductos.filter(p => p.id !== id);
+                saveData();
+            }
+        }
+
+        function borrarZona(id) {
+            if(confirm("¿Eliminar esta zona de envío?")) {
+                listaZonas = listaZonas.filter(z => z.id !== id);
+                saveData();
+            }
+        }
+
+      function descargarDataJS() {
+    // 1. Verificamos si hay productos
+    if (listaProductos.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atención',
+            text: 'Carga al menos un producto para generar el backup.',
+            background: '#1a1a1a',
+            color: '#fff'
+        });
+        return;
+    }
+
+    // 2. Armamos la configuración dinámica leyendo los inputs del panel
+   const configExport = {
+        nombre: document.getElementById('conf-nombre').value || "Mi Tienda",
+        telefono: document.getElementById('conf-whatsapp').value || "",
+        // Agregamos estas dos líneas clave:
+        logoUrl: document.getElementById('conf-logo').value || "",
+        fondoUrl: document.getElementById('conf-fondo').value || "",
+        horario: {
+            turno1: { 
+                apertura: document.getElementById('apertura1').value || "11:00", 
+                cierre: document.getElementById('cierre1').value || "15:00" 
+            },
+            turno2: { 
+                apertura: document.getElementById('apertura2').value || "20:00", 
+                cierre: document.getElementById('cierre2').value || "00:00" 
+            }
+        }
+    };
+
+    // 3. Generamos el contenido del archivo
+    const contenido = `// Backup generado para: ${configExport.nombre}\n// Cliente ID: ${CLIENTE_ID}\n\nconst TIENDA_CONFIG = ${JSON.stringify(configExport, null, 4)};\n\nconst productos = ${JSON.stringify(listaProductos, null, 4)};`;
+    
+    // 4. Creamos el archivo y disparamos la descarga
+    const blob = new Blob([contenido], { type: 'text/javascript' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    
+    // El nombre del archivo ahora incluye el ID del cliente (ej: data_alodepablito.js)
+    a.href = url;
+    a.download = `data_${CLIENTE_ID}.js`; 
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    console.log(`Backup generado con éxito para el cliente: ${CLIENTE_ID}`);
+}
+
+function importarData(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        let contenido = e.target.result;
+        try {
+            const inicio = contenido.indexOf('const productos =');
+            if (inicio === -1) throw new Error("No se encontró la variable productos");
+
+            let rawData = contenido.substring(inicio);
+            const startBracket = rawData.indexOf('[');
+            const endBracket = rawData.lastIndexOf(']') + 1;
+            let finalSelection = rawData.substring(startBracket, endBracket);
+
+            const productosImportados = new Function(`return ${finalSelection}`)();
+            
+            if (Array.isArray(productosImportados)) {
+                if (confirm(`¡Archivo detectado! Se encontraron ${productosImportados.length} productos. ¿Cargar al administrador?`)) {
+                    listaProductos = productosImportados;
+                    saveData(); // saveData ya llama a renderUI() internamente
+                    
+                    Swal.fire({
+                        title: '¡Importación Exitosa!',
+                        text: `Se han cargado ${productosImportados.length} productos correctamente.`,
+                        icon: 'success',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        confirmButtonColor: '#ff6b00'
+                    });
+                    return; 
+                }
+            }
+        } catch (error) {
+            console.error("Error al importar:", error);
+            Swal.fire({
+                title: 'Error de archivo',
+                text: 'No se pudo procesar el data.js. Asegúrate de que el formato sea correcto.',
+                icon: 'error',
+                background: '#1a1a1a',
+                color: '#fff',
+                confirmButtonColor: '#ff0000'
+            });
+        }
+    };
+    reader.readAsText(file);
+}
+
+        lucide.createIcons();
+
+function editarProducto(id) {
+    const p = listaProductos.find(item => String(item.id) === String(id));
+    if (!p) return;
+
+    editandoId = p.id;
+    
+    // Mapeo de datos al formulario
+    document.getElementById('prodName').value = p.nombre;
+    document.getElementById('prodPrice').value = p.precio;
+    document.getElementById('prodCat').value = p.categoria ? p.categoria.toLowerCase() : "";
+    document.getElementById('prodImg').value = p.img;
+    document.getElementById('prodDesc').value = p.desc || "";
+    
+    // Convertir opciones de array a texto para el input
+    if (p.opciones && Array.isArray(p.opciones)) {
+        document.getElementById('prodOpciones').value = p.opciones.map(o => `${o.nombre}:${o.precio}`).join(', ');
+    } else {
+        document.getElementById('prodOpciones').value = "";
+    }
+
+    // Feedback visual en el botón de guardado
+    const btnSave = document.getElementById('btn-save-prod');
+    if (btnSave) {
+        btnSave.innerText = "ACTUALIZAR CAMBIOS";
+        btnSave.style.backgroundColor = "#2563eb"; // Azul para modo edición
+    }
+    
+    // Mostrar botón de cancelar
+    const btnCancel = document.getElementById('btn-cancel-edit');
+    if (btnCancel) btnCancel.classList.remove('hidden');
+
+    // Scroll automático al formulario para editar rápido
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelarEdicion() {
+    editandoId = null;
+    document.getElementById('product-form').reset();
+    const btnSave = document.getElementById('btn-save-prod');
+    btnSave.innerText = "GUARDAR PLATO";
+    btnSave.style.backgroundColor = "#ff6b00";
+    
+    const btnCancel = document.getElementById('btn-cancel-edit');
+    if (btnCancel) btnCancel.classList.add('hidden');
+}
+
+function borrarZona(id) {
+    Swal.fire({
+        title: '¿Eliminar zona?',
+        text: "El costo de envío dejará de aplicarse.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff6b00',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, borrar',
+        background: '#1a1a1a',
+        color: '#fff'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Filtramos la lista localmente
+            listaZonas = listaZonas.filter(z => z.id !== id);
+            
+            // Sincronizamos con Firebase
+            db.ref(PATH_ZONAS).set(listaZonas)
+                .then(() => {
+                    Swal.fire({
+                        title: 'Eliminado',
+                        icon: 'success',
+                        timer: 1000,
+                        showConfirmButton: false,
+                        background: '#1a1a1a',
+                        color: '#fff'
+                    });
+                });
+        }
+    });
+}
+
+function generarQR() {
+    // Detecta automáticamente el dominio actual (funciona para cualquier cliente)
+    const urlLocal = window.location.origin; 
+    
+    // Generamos el QR usando la API de QuickChart (Naranja #ff6b00)
+    const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(urlLocal)}&dark=ff6b00&size=500&margin=2`;
+    
+    // Mostramos el QR con SweetAlert
+    Swal.fire({
+        title: 'CÓDIGO QR DEL MENÚ',
+        html: `
+            <p class="text-gray-400 mb-4 text-sm">Este código llevará a los clientes a:<br><b class="text-orange-500">${urlLocal}</b></p>
+            <div class="bg-white p-4 rounded-xl inline-block">
+                <img src="${qrUrl}" alt="QR" style="width: 200px; height: 200px;">
+            </div>
+        `,
+        background: '#1a1a1a',
+        color: '#fff',
+        showCancelButton: true,
+        confirmButtonText: '<i data-lucide="download" class="w-4 h-4 mr-2"></i> DESCARGAR',
+        cancelButtonText: 'CERRAR',
+        confirmButtonColor: '#ff6b00',
+        buttonsStyling: true,
+        customClass: {
+            confirmButton: 'flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold uppercase tracking-wider',
+            cancelButton: 'px-6 py-3 rounded-xl font-bold uppercase tracking-wider'
+        },
+        didOpen: () => {
+            // Renderiza el icono de Lucide dentro del botón de SweetAlert
+            if (window.lucide) lucide.createIcons();
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Lógica de descarga profesional
+            const link = document.createElement('a');
+            link.href = qrUrl;
+            link.download = 'QR_Menu_Digital.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Avisamos al usuario que se abrió la descarga
+            Swal.fire({
+                title: '¡Listo!',
+                text: 'La imagen se abrirá o descargará para que puedas imprimirla.',
+                icon: 'success',
+                confirmButtonColor: '#ff6b00',
+                background: '#1a1a1a',
+                color: '#fff'
+            });
+        }
+    });
+
+    // Renderiza iconos de Lucide generales si los hubiera
+    if (window.lucide) lucide.createIcons();
+}
+
+    </script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
