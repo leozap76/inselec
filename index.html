@@ -68,7 +68,7 @@ fbq('track', 'PageView');
        <header class="relative bg-white shadow-sm">
     <div class="h-40 w-full relative">
         <img id="store-cover" 
-             src="https://i.ibb.co/5XW5JZgr/fondo-menuya.webp" 
+             src="https://i.ibb.co/hxNcXbJL/imgfondo.webp" 
              class="w-full h-full object-cover transition-opacity duration-500"
              onerror="this.src='https://placehold.co/800x400/1a1a1a/333333?text= '">
         <div class="absolute inset-0 bg-black/20"></div>
@@ -89,7 +89,7 @@ fbq('track', 'PageView');
             </div>
 
             <div class="w-24 h-24 rounded-2xl bg-white p-1 shadow-xl border border-slate-100 overflow-hidden">
-                <img id="store-logo" src="https://i.ibb.co/v6SXYpXC/favicon-menuya.webp" class="w-full h-full object-cover" alt="Logo">
+                <img id="store-logo" src="https://i.ibb.co/Ng9xTzvZ/logo.webp" class="w-full h-full object-cover" alt="Logo">
             </div>
             
         </div>
@@ -160,7 +160,7 @@ fbq('track', 'PageView');
     <div class="bg-[#1a1a1a] w-full max-w-md rounded-t-[2.5rem] p-8 shadow-2xl max-h-[90vh] overflow-y-auto border-t border-white/10">
         
         <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Tu Pedido 🔥</h2>
+            <h2 class="text-2xl font-bold text-white tracking-tight">Tu Pedido </h2>
             <button onclick="toggleCheckout(false)" class="text-gray-500 p-2 hover:bg-white/5 rounded-full transition-colors">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
@@ -187,29 +187,14 @@ fbq('track', 'PageView');
                 <input type="text" id="cust-name" placeholder="Ej: Juan Pérez" 
                        class="w-full bg-[#0f0f0f] p-4 rounded-2xl border border-white/5 text-white placeholder:text-gray-600 focus:outline-none focus:border-[#ff6b00]/50 transition-all" required>
             </div>
-            <div class="space-y-3">
-    <input type="text" id="cust-receiver" placeholder="¿Quién recibe el pedido? (Ej: Leonardo)" 
-           class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#ff6b00]">
-
-    <select id="cust-time" class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#ff6b00]">
-        <option value="Lo Antes Posible">Lo Antes Posible</option>
-        <option value="En 30 min">En 30 min</option>
-        <option value="En 1 hora">En 1 hora</option>
-        <option value="Programar para más tarde">Programar para más tarde</option>
-    </select>
-</div>
+     
 
             <div class="grid grid-cols-1 gap-5">
-                <div>
-                    <label class="block text-[11px] font-bold text-[#ff6b00] uppercase tracking-widest mb-2 ml-1">Zona de Entrega</label>
-                    <select id="delivery-zone" onchange="actualizarTotalConEnvio()" 
-                            class="w-full bg-[#0f0f0f] p-4 rounded-2xl border border-white/5 text-white focus:outline-none focus:border-[#ff6b00]/50 transition-all appearance-none cursor-pointer">
-                        </select>
-                </div>
+              
                 
 
                 <div>
-                    <label class="block text-[11px] font-bold text-[#ff6b00] uppercase tracking-widest mb-2 ml-1">Dirección / Localidad</label>
+                    <label class="block text-[11px] font-bold text-[#ff6b00] uppercase tracking-widest mb-2 ml-1">Dirección</label>
                     <input type="text" id="cust-address" placeholder="Ej: Calle Falsa 123" 
                            class="w-full bg-[#0f0f0f] p-4 rounded-2xl border border-white/5 text-white placeholder:text-gray-600 focus:outline-none focus:border-[#ff6b00]/50 transition-all" required>
                     <input type="hidden" id="cust-coords">
