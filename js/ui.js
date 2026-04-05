@@ -222,10 +222,10 @@ function renderProducts(productosToRender) {
             btnAgregar = `<button type="button" onclick="agregarAlCarrito('${prod.id}', document.getElementById('opc-${prod.id}').value)" class="h-10 px-5 flex items-center justify-center bg-[#ff6b00] text-black rounded-xl font-bold shadow-md hover:scale-105 active:scale-95 transition-all uppercase tracking-wide text-xs">Agregar <span class="text-lg leading-none ml-2 mb-0.5">+</span></button>`;
         }
 
-        return `
+       return `
         <div class="bg-[#111] rounded-[2rem] overflow-hidden shadow-lg border border-white/5 flex flex-col">
-            <div class="relative w-full h-64 bg-black">
-                <img src="${prod.imagen || prod.img || 'https://i.ibb.co/v6SXYpXC/favicon-menuya.webp'}" alt="${prod.nombre}" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" loading="lazy" onerror="this.src='https://i.ibb.co/v6SXYpXC/favicon-menuya.webp'">
+            <div class="relative w-full h-48 bg-white p-4">
+                <img src="${prod.imagen || prod.img || 'https://i.ibb.co/v6SXYpXC/favicon-menuya.webp'}" alt="${prod.nombre}" class="w-full h-full object-contain hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.src='https://i.ibb.co/v6SXYpXC/favicon-menuya.webp'">
             </div>
             <div class="p-5 flex flex-col gap-2">
                 <div>
